@@ -1,5 +1,6 @@
 import random
 import streamlit as st
+from logic_utils import check_guess  #FIX: Refactored logic into logic_utils.py using Copilot Agent mode
 
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
@@ -28,23 +29,6 @@ def parse_guess(raw: str):
 
     return True, value, None
 
-
-def check_guess(guess, secret):
-    if guess == secret:
-        return "Win", "🎉 Correct!"
-
-    try:
-        if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
-        else:
-            return "Too Low", "📉 Go LOWER!"
-    except TypeError:
-        g = str(guess)
-        if g == secret:
-            return "Win", "🎉 Correct!"
-        if g > secret:
-            return "Too High", "📈 Go HIGHER!"
-        return "Too Low", "📉 Go LOWER!"
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -86,14 +70,30 @@ attempt_limit = attempt_limit_map[difficulty]
 
 low, high = get_range_for_difficulty(difficulty)
 
+# FIX: Store game state so it persists across Streamlit reruns
+if "secret" not in st.session_state:
+    st.session_state.secret = random.randint(low, high)
+
+if "attempts" not in st.session_state:
+    st.session_state.attempts = 0
+
+if "score" not in st.session_state:
+    st.session_state.score = 0
+
+if "status" not in st.session_state:
+    st.session_state.status = "playing"
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 st.sidebar.caption(f"Range: {low} to {high}")
 st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
-
+# FIXME: Logic breaks here
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    st.session_state.attempts = 0  # FIX: was 1, causing display to start one short and mismatch new-game reset using Calude agent mode
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -132,8 +132,12 @@ with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
 if new_game:
+    # FIX: Reset session state so a new game starts with a fresh secret number and attempts
+    st.session_state.secret = random.randint(low, high)
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.score = 0
+    st.session_state.status = "playing"
+    st.session_state.history = []
     st.success("New game started.")
     st.rerun()
 
@@ -145,7 +149,7 @@ if st.session_state.status != "playing":
     st.stop()
 
 if submit:
-    st.session_state.attempts += 1
+    st.session_state.attempts += 1 # FIX: Fixed off-by-one error causing the game to end + one attempt early using Copilot Agent mode.
 
     ok, guess_int, err = parse_guess(raw_guess)
 
