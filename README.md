@@ -25,13 +25,15 @@ It wrote the code, ran away, and now the game is unplayable.
 
 ## 📝 Document Your Experience
 
-- [ ] Describe the game's purpose.
-- [ ] Detail which bugs you found.
-- [ ] Explain what fixes you applied.
+- The game lets the player guess a secret number within a limited number of attempts. After each guess, the player receives a hint telling them if the guess is too high or too low. 
+- The hint messages were reversed (high guesses said “go higher” and low guesses said “go lower”). The game also ended one attempt early because the attempt counter was miscounted.
+- I fixed the hint logic in check_guess and moved it to logic_utils.py. I also corrected the attempt counter so the game only ends after the final allowed guess.
 
 ## 📸 Demo
 
-- [ ] [Insert a screenshot of your fixed, winning game here]
+- ## 📸 Demo
+
+![Winning Game Screenshot](images/game-win.png)
 
 ## 🚀 Stretch Features
 
